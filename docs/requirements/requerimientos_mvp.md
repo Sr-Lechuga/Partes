@@ -42,7 +42,7 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Estado |
 |----|--------------|------------------------|--------|
-| RF-EMP-001 | Crear empresa con nombre y config base | Empresa creada con threshold, moneda y datos iniciales | ⬜ |
+| RF-EMP-001 | Crear empresa con nombre y config base | Empresa creada con threshold por defecto, moneda y datos iniciales | ⬜ |
 | RF-EMP-002 | Ver datos de empresa autenticada | Retorna nombre, configuración y datos básicos | ⬜ |
 | RF-EMP-003 | Editar datos de empresa (solo ADMIN) | Cambios persistidos, validación de rol | ⬜ |
 | RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | ⬜ |
@@ -54,7 +54,7 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Estado |
 |----|--------------|------------------------|--------|
-| RF-EMPL-001 | Alta de empleado (nombre, doc, tel, tarifa) | Empleado asociado a la empresa con datos completos | ⬜ |
+| RF-EMPL-001 | Alta de empleado (nombre, doc, tel, tarifa, threshold opcional) | Empleado creado. Si se define threshold, prima sobre el de la empresa | ⬜ |
 | RF-EMPL-002 | Listar empleados con filtros y paginación | Filtros: status, search (nombre/doc), paginación | ⬜ |
 | RF-EMPL-003 | Ver detalle de empleado con tarifa vigente | Info completa incluyendo tarifa actual | ⬜ |
 | RF-EMPL-004 | Editar datos de empleado (RRHH) | Cambios persistidos con historial | ⬜ |
@@ -68,7 +68,7 @@
 | RF-JOR-001 | Iniciar jornada (timer, máx 1 sesión activa) | Se crea `WorkSession` activa. Error si ya existe una | ⬜ |
 | RF-JOR-002 | Finalizar jornada con cálculo automático | Duración total, horas normales y extra calculadas | ⬜ |
 | RF-JOR-003 | Carga manual (máx 48h atraso, fuera → `422`) | RRHH o empleado carga con inicio/fin. Validación de ventana | ⬜ |
-| RF-JOR-004 | Cálculo automático horas extra (> threshold = extra x2) | Horas > 8h (default) marcadas como extra, costo x2 | ⬜ |
+| RF-JOR-004 | Cálculo automático horas extra (> threshold = extra x2) | Horas > threshold del empleado (o default empresa) marcadas extra, costo x2 | ⬜ |
 | RF-JOR-005 | Empleado ve historial propio filtrable por fecha | Listado con horas normales, extra y estado | ⬜ |
 | RF-JOR-006 | RRHH lista todas las jornadas (filtros + paginación) | Filtros: employeeId, fechas, status, approvalStatus | ⬜ |
 | RF-JOR-007 | Ver detalle completo de un WorkLog | Inicio, fin, duración, horas, costo, estado | ⬜ |
