@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { CreateCompanyInput } from '@/lib/validators/company';
+import { CreateCompanyInput, UpdateCompanyInput } from '@/lib/validators/company';
 
 export class CompanyService {
   static async createCompany(input: CreateCompanyInput) {
@@ -19,6 +19,13 @@ export class CompanyService {
   static async getCompanyById(id: string) {
     return prisma.company.findUnique({
       where: { id },
+    });
+  }
+
+  static async updateCompany(id: string, input: UpdateCompanyInput) {
+    return prisma.company.update({
+      where: { id },
+      data: input,
     });
   }
 }

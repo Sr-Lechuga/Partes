@@ -44,7 +44,7 @@
 |----|--------------|------------------------|--------|
 | RF-EMP-001 | Crear empresa con nombre y config base | Empresa creada con threshold por defecto, moneda y datos iniciales | ✅ |
 | RF-EMP-002 | Ver datos de empresa autenticada | Retorna nombre, configuración y datos básicos | ✅ |
-| RF-EMP-003 | Editar datos de empresa (solo ADMIN) | Cambios persistidos, validación de rol | ⬜ |
+| RF-EMP-003 | Editar datos de empresa (solo ADMIN) | Cambios persistidos, validación de rol | ✅ |
 | RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | ⬜ |
 | RF-USR-002 | Editar membresía (cambio de rol/estado) | Cambio reflejado inmediatamente en permisos | ⬜ |
 | RF-USR-003 | Desactivar membresía (datos históricos persisten) | Usuario desactivado no puede operar | ⬜ |

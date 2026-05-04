@@ -7,3 +7,9 @@ export const createCompanySchema = z.object({
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
+
+export const updateCompanySchema = createCompanySchema.partial().extend({
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+export type UpdateCompanyInput = z.infer<typeof updateCompanySchema>;
