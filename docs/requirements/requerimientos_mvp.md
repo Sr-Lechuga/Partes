@@ -2,7 +2,7 @@
 
 > **Proyecto:** Micro SaaS — Sistema de Registro de Jornales  
 > **Versión:** MVP  
-> **Última actualización:** 2026-05-11  
+> **Última actualización:** 2026-05-11 (RF-USR-001 a RF-USR-004 completados)  
 
 ---
 
@@ -45,10 +45,10 @@
 | RF-EMP-001 | Crear empresa con nombre y config base | Empresa creada con threshold por defecto, moneda y datos iniciales | RF-AUTH-001 | ✅ |
 | RF-EMP-002 | Ver datos de empresa autenticada | Retorna nombre, configuración y datos básicos | RF-EMP-001 | ✅ |
 | RF-EMP-003 | Editar datos de empresa (solo ADMIN) | Cambios persistidos, validación de rol | RF-EMP-001, RF-MT-002 | ✅ |
-| RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | RF-AUTH-001, RF-EMP-001 | ⬜ |
-| RF-USR-002 | Editar membresía (cambio de rol/estado) | Cambio reflejado inmediatamente en permisos | RF-USR-001 | ⬜ |
-| RF-USR-003 | Desactivar membresía (datos históricos persisten) | Usuario desactivado no puede operar | RF-USR-001 | ⬜ |
-| RF-USR-004 | Listar miembros con roles (paginado) | Listado con nombre, email, rol y estado | RF-USR-001 | ⬜ |
+| RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | RF-AUTH-001, RF-EMP-001 | ✅ |
+| RF-USR-002 | Editar membresía (cambio de rol/estado) | Cambio reflejado inmediatamente en permisos | RF-USR-001 | ✅ |
+| RF-USR-003 | Desactivar membresía (datos históricos persisten) | Usuario desactivado no puede operar | RF-USR-001 | ✅ |
+| RF-USR-004 | Listar miembros con roles (paginado) | Listado con nombre, email, rol y estado | RF-USR-001 | ✅ |
 
 ### 1.4 Gestión de Empleados
 
@@ -182,7 +182,7 @@
 |-----------|-------|----|----|----|-----|
 | Autenticación | 5 | 5 | 0 | 0 | 0 |
 | Multi-Tenancy | 3 | 3 | 0 | 0 | 0 |
-| Empresas/Usuarios | 7 | 4 | 0 | 3 | 0 |
+| Empresas/Usuarios | 7 | 0 | 0 | 7 | 0 |
 | Empleados | 6 | 0 | 0 | 6 | 0 |
 | Jornadas/Horas | 9 | 9 | 0 | 0 | 0 |
 | Auditoría | 3 | 3 | 0 | 0 | 0 |
@@ -196,4 +196,4 @@
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **61** | **0** | **9** | **0** |
+| **TOTAL** | **70** | **57** | **0** | **13** | **0** |
