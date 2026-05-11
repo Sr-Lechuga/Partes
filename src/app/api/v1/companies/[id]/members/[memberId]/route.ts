@@ -51,7 +51,7 @@ export const GET = withAuth(
 // RF-USR-002: Edit membership role or status.
 // Only ADMIN members can call this endpoint.
 export const PATCH = withAuth(
-  async (request, { companyId, params }) => {
+  async (request, { companyId, params, user }) => {
     try {
       const { memberId } = params;
       const body = await request.json();
@@ -59,7 +59,7 @@ export const PATCH = withAuth(
       // Validate request body
       const data = updateMembershipSchema.parse(body);
 
-      const membership = await MembershipService.updateMembership(companyId!, memberId, data);
+      const membership = await MembershipService.updateMembership(companyId!, memberId, data, user.uid);
 
       return NextResponse.json({ data: membership });
     } catch (error: unknown) {
@@ -110,11 +110,11 @@ export const PATCH = withAuth(
 // RF-USR-003: Deactivate a membership (soft delete — data persists).
 // Only ADMIN members can call this endpoint.
 export const DELETE = withAuth(
-  async (_request, { companyId, params }) => {
+  async (_request, { companyId, params, user }) => {
     try {
       const { memberId } = params;
 
-      const membership = await MembershipService.deactivateMembership(companyId!, memberId);
+      const membership = await MembershipService.deactivateMembership(companyId!, memberId, user.uid);
 
       return NextResponse.json({ data: membership });
     } catch (error: unknown) {

@@ -54,7 +54,7 @@ export const GET = withAuth(
  * RF-JOR-003: Carga manual de jornada
  */
 export const POST = withAuth(
-  async (request, { companyId, role }) => {
+  async (request, { companyId, user, role }) => {
     try {
       const body = await request.json();
       const data = createManualWorkLogSchema.parse(body);
@@ -66,7 +66,7 @@ export const POST = withAuth(
         date: new Date(data.date),
         startTime: new Date(data.startTime),
         endTime: new Date(data.endTime),
-      }, isHR);
+      }, user.uid, isHR);
 
       return NextResponse.json({ data: workLog }, { status: 201 });
     } catch (error: any) {

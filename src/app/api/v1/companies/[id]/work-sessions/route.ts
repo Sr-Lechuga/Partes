@@ -8,16 +8,12 @@ import { withAuth } from '@/lib/api-utils';
  * RF-JOR-001: Iniciar jornada (start timer)
  */
 export const POST = withAuth(
-  async (request, { companyId, role }) => {
+  async (request, { companyId, user }) => {
     try {
       const body = await request.json();
       const { employeeId } = startSessionSchema.parse(body);
 
-      // If role is EMPLOYEE, they can only start their own session.
-      // (Future: validate employee record links to user uid)
-      // For now, any member of the company can start a session for an employee in that company.
-
-      const session = await WorkLogService.startSession(companyId!, employeeId);
+      const session = await WorkLogService.startSession(companyId!, employeeId, user.uid);
 
       return NextResponse.json({ data: session }, { status: 201 });
     } catch (error: any) {

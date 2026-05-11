@@ -8,7 +8,7 @@ import { withAuth } from '@/lib/api-utils';
  * RF-JOR-002: Finalizar jornada (stop timer)
  */
 export const POST = withAuth(
-  async (request, { companyId, params }) => {
+  async (request, { companyId, params, user }) => {
     try {
       const { sessionId } = params;
       const body = await request.json().catch(() => ({}));
@@ -17,6 +17,7 @@ export const POST = withAuth(
       const workLog = await WorkLogService.stopSession(
         companyId!,
         sessionId,
+        user.uid,
         endedAt ? new Date(endedAt) : new Date()
       );
 

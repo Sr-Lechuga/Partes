@@ -61,14 +61,14 @@ export const GET = withAuth(
 // RF-USR-001: Assign a user (RRHH or any role) to a company.
 // Only ADMIN members can call this endpoint.
 export const POST = withAuth(
-  async (request, { companyId }) => {
+  async (request, { companyId, user }) => {
     try {
       const body = await request.json();
 
       // Validate request body
       const data = createMembershipSchema.parse(body);
 
-      const membership = await MembershipService.createMembership(companyId!, data);
+      const membership = await MembershipService.createMembership(companyId!, data, user.uid);
 
       return NextResponse.json({ data: membership }, { status: 201 });
     } catch (error: unknown) {

@@ -15,6 +15,9 @@ jest.mock('@/lib/prisma', () => ({
       count: jest.fn(),
       update: jest.fn(),
     },
+    auditEvent: {
+      create: jest.fn(),
+    },
   },
 }));
 
@@ -34,6 +37,7 @@ const membershipMock = prisma.membership as jest.Mocked<typeof prisma.membership
 // ─── Shared fixtures ─────────────────────────────────────────────────────────
 
 const COMPANY_ID = 'company-uuid-001';
+const PERFORMED_BY = 'user-uuid-001';
 
 const mockCompany = {
   id: COMPANY_ID,
@@ -83,7 +87,7 @@ describe('MembershipService', () => {
       };
 
       // ACT
-      const result = await MembershipService.createMembership(COMPANY_ID, input);
+      const result = await MembershipService.createMembership(COMPANY_ID, input, PERFORMED_BY);
 
       // ASSERT
       expect(result).toEqual(mockMembership);
@@ -104,15 +108,13 @@ describe('MembershipService', () => {
       (companyMock.findUnique as jest.Mock).mockResolvedValue(null);
 
       // ACT & ASSERT
-      // Note: toMatchObject({ name }) is used instead of toThrow(Class) because
-      // custom error subclasses lose instanceof identity across Jest module boundaries.
       await expect(
         MembershipService.createMembership(COMPANY_ID, {
           firebaseUid: 'uid',
           email: 'x@x.com',
           name: 'Test',
           role: 'HR',
-        })
+        }, PERFORMED_BY)
       ).rejects.toMatchObject({ name: 'MembershipNotFoundError' });
     });
 
@@ -126,14 +128,13 @@ describe('MembershipService', () => {
       );
       (membershipMock.create as jest.Mock).mockRejectedValue(prismaConflictError);
 
-      // ACT & ASSERT
       await expect(
         MembershipService.createMembership(COMPANY_ID, {
           firebaseUid: 'firebase-uid-001',
           email: 'hr@empresa.com',
           name: 'Carlos García',
           role: 'HR',
-        })
+        }, PERFORMED_BY)
       ).rejects.toMatchObject({ name: 'MembershipConflictError' });
     });
 
@@ -144,14 +145,13 @@ describe('MembershipService', () => {
         new Error('Database connection failed')
       );
 
-      // ACT & ASSERT
       await expect(
         MembershipService.createMembership(COMPANY_ID, {
           firebaseUid: 'uid',
           email: 'x@x.com',
           name: 'Test',
           role: 'HR',
-        })
+        }, PERFORMED_BY)
       ).rejects.toThrow('Database connection failed');
     });
   });
@@ -170,7 +170,8 @@ describe('MembershipService', () => {
       const result = await MembershipService.updateMembership(
         COMPANY_ID,
         mockAdminMembership.id,
-        { role: 'HR' }
+        { role: 'HR' },
+        PERFORMED_BY
       );
 
       // ASSERT
@@ -191,7 +192,8 @@ describe('MembershipService', () => {
       const result = await MembershipService.updateMembership(
         COMPANY_ID,
         mockMembership.id,
-        { name: 'Nuevo Nombre' }
+        { name: 'Nuevo Nombre' },
+        PERFORMED_BY
       );
 
       // ASSERT
@@ -202,9 +204,8 @@ describe('MembershipService', () => {
       // ARRANGE
       (membershipMock.findFirst as jest.Mock).mockResolvedValue(null);
 
-      // ACT & ASSERT
       await expect(
-        MembershipService.updateMembership(COMPANY_ID, 'nonexistent-id', { role: 'HR' })
+        MembershipService.updateMembership(COMPANY_ID, 'nonexistent-id', { role: 'HR' }, PERFORMED_BY)
       ).rejects.toMatchObject({ name: 'MembershipNotFoundError' });
     });
 
@@ -213,12 +214,12 @@ describe('MembershipService', () => {
       (membershipMock.findFirst as jest.Mock).mockResolvedValue(mockAdminMembership);
       (membershipMock.count as jest.Mock).mockResolvedValue(1); // Only 1 admin
 
-      // ACT & ASSERT
       await expect(
         MembershipService.updateMembership(
           COMPANY_ID,
           mockAdminMembership.id,
-          { role: 'HR' }
+          { role: 'HR' },
+          PERFORMED_BY
         )
       ).rejects.toMatchObject({ name: 'LastAdminError' });
     });
@@ -233,7 +234,8 @@ describe('MembershipService', () => {
         MembershipService.updateMembership(
           COMPANY_ID,
           mockAdminMembership.id,
-          { status: 'INACTIVE' }
+          { status: 'INACTIVE' },
+          PERFORMED_BY
         )
       ).rejects.toMatchObject({ name: 'LastAdminError' });
     });
@@ -249,7 +251,8 @@ describe('MembershipService', () => {
       const result = await MembershipService.updateMembership(
         COMPANY_ID,
         mockAdminMembership.id,
-        { role: 'HR' }
+        { role: 'HR' },
+        PERFORMED_BY
       );
 
       // ASSERT
@@ -267,7 +270,8 @@ describe('MembershipService', () => {
       await MembershipService.updateMembership(
         COMPANY_ID,
         hrMember.id,
-        { role: 'EMPLOYEE' }
+        { role: 'EMPLOYEE' },
+        PERFORMED_BY
       );
 
       // ASSERT — count should NOT have been called since HR→EMPLOYEE doesn't lose admin
@@ -287,7 +291,8 @@ describe('MembershipService', () => {
       // ACT
       const result = await MembershipService.deactivateMembership(
         COMPANY_ID,
-        mockMembership.id
+        mockMembership.id,
+        PERFORMED_BY
       );
 
       // ASSERT
@@ -306,7 +311,8 @@ describe('MembershipService', () => {
       // ACT
       const result = await MembershipService.deactivateMembership(
         COMPANY_ID,
-        mockMembership.id
+        mockMembership.id,
+        PERFORMED_BY
       );
 
       // ASSERT
@@ -318,9 +324,8 @@ describe('MembershipService', () => {
       // ARRANGE
       (membershipMock.findFirst as jest.Mock).mockResolvedValue(null);
 
-      // ACT & ASSERT
       await expect(
-        MembershipService.deactivateMembership(COMPANY_ID, 'nonexistent-id')
+        MembershipService.deactivateMembership(COMPANY_ID, 'nonexistent-id', PERFORMED_BY)
       ).rejects.toMatchObject({ name: 'MembershipNotFoundError' });
     });
 
@@ -329,9 +334,8 @@ describe('MembershipService', () => {
       (membershipMock.findFirst as jest.Mock).mockResolvedValue(mockAdminMembership);
       (membershipMock.count as jest.Mock).mockResolvedValue(1);
 
-      // ACT & ASSERT
       await expect(
-        MembershipService.deactivateMembership(COMPANY_ID, mockAdminMembership.id)
+        MembershipService.deactivateMembership(COMPANY_ID, mockAdminMembership.id, PERFORMED_BY)
       ).rejects.toMatchObject({ name: 'LastAdminError' });
     });
 
@@ -345,7 +349,8 @@ describe('MembershipService', () => {
       // ACT
       const result = await MembershipService.deactivateMembership(
         COMPANY_ID,
-        mockAdminMembership.id
+        mockAdminMembership.id,
+        PERFORMED_BY
       );
 
       // ASSERT

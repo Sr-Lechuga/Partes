@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { calculateHours } from '@/lib/hours';
 import { Decimal } from '@prisma/client/runtime/library';
+import { AuditService } from './auditService';
 
 export class WorkSessionActiveError extends Error {
   readonly code = 'SESSION_ALREADY_ACTIVE';
@@ -30,7 +31,12 @@ export class WorkLogService {
   /**
    * RF-JOR-001: Start a work session (timer)
    */
-  static async startSession(companyId: string, employeeId: string, source: string = 'mobile') {
+  static async startSession(
+    companyId: string,
+    employeeId: string,
+    performedBy: string,
+    source: string = 'mobile'
+  ) {
     // Check for existing session
     const activeSession = await prisma.workSession.findFirst({
       where: { employeeId, companyId },
@@ -40,7 +46,7 @@ export class WorkLogService {
       throw new WorkSessionActiveError();
     }
 
-    return prisma.workSession.create({
+    const session = await prisma.workSession.create({
       data: {
         companyId,
         employeeId,
@@ -48,12 +54,28 @@ export class WorkLogService {
         source,
       },
     });
+
+    await AuditService.recordEvent({
+      companyId,
+      entityType: 'WORK_LOG',
+      entityId: session.id,
+      action: 'CREATE',
+      performedBy,
+      metadata: { action: 'START_SESSION', source },
+    });
+
+    return session;
   }
 
   /**
    * RF-JOR-002: Stop a work session and create a WorkLog
    */
-  static async stopSession(companyId: string, sessionId: string, endedAt: Date = new Date()) {
+  static async stopSession(
+    companyId: string,
+    sessionId: string,
+    performedBy: string,
+    endedAt: Date = new Date()
+  ) {
     return prisma.$transaction(async (tx) => {
       const session = await tx.workSession.findUnique({
         where: { id: sessionId, companyId },
@@ -88,6 +110,15 @@ export class WorkLogService {
       // Remove session
       await tx.workSession.delete({ where: { id: sessionId } });
 
+      await AuditService.recordEvent({
+        companyId,
+        entityType: 'WORK_LOG',
+        entityId: workLog.id,
+        action: 'UPDATE',
+        performedBy,
+        metadata: { action: 'STOP_SESSION', breakdown },
+      });
+
       return workLog;
     });
   }
@@ -104,6 +135,7 @@ export class WorkLogService {
       endTime: Date;
       reason: string;
     },
+    performedBy: string,
     isHR: boolean = false
   ) {
     // RF-JOR-003: 48h window check for non-HR
@@ -127,7 +159,7 @@ export class WorkLogService {
     const threshold = employee.overtimeThreshold ?? employee.company.defaultThreshold;
     const breakdown = calculateHours(data.startTime, data.endTime, threshold);
 
-    return prisma.workLog.create({
+    const workLog = await prisma.workLog.create({
       data: {
         companyId,
         employeeId: data.employeeId,
@@ -141,6 +173,17 @@ export class WorkLogService {
         status: 'PENDING',
       },
     });
+
+    await AuditService.recordEvent({
+      companyId,
+      entityType: 'WORK_LOG',
+      entityId: workLog.id,
+      action: 'CREATE',
+      performedBy,
+      metadata: { action: 'MANUAL_ENTRY', reason: data.reason },
+    });
+
+    return workLog;
   }
 
   /**
@@ -259,6 +302,15 @@ export class WorkLogService {
 
       if (historyEntries.length > 0) {
         await tx.workLogHistory.createMany({ data: historyEntries });
+        
+        await AuditService.recordEvent({
+          companyId,
+          entityType: 'WORK_LOG',
+          entityId: workLogId,
+          action: 'UPDATE',
+          performedBy: data.changedBy,
+          metadata: { updates: updateData, reason: data.reason },
+        });
       }
 
       return updated;

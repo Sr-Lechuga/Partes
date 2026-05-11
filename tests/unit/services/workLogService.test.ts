@@ -27,6 +27,9 @@ jest.mock('@/lib/prisma', () => ({
     workLogHistory: {
       createMany: jest.fn(),
     },
+    auditEvent: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn((cb) => cb(prisma)),
   },
 }));
@@ -34,6 +37,7 @@ jest.mock('@/lib/prisma', () => ({
 describe('WorkLogService', () => {
   const companyId = 'comp-1';
   const employeeId = 'emp-1';
+  const PERFORMED_BY = 'user-1';
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -44,7 +48,7 @@ describe('WorkLogService', () => {
       (prisma.workSession.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.workSession.create as jest.Mock).mockResolvedValue({ id: 'sess-1' });
 
-      const result = await WorkLogService.startSession(companyId, employeeId);
+      const result = await WorkLogService.startSession(companyId, employeeId, PERFORMED_BY);
       
       expect(result.id).toBe('sess-1');
       expect(prisma.workSession.create).toHaveBeenCalled();
@@ -53,7 +57,7 @@ describe('WorkLogService', () => {
     it('should throw WorkSessionActiveError if session exists', async () => {
       (prisma.workSession.findFirst as jest.Mock).mockResolvedValue({ id: 'sess-active' });
 
-      await expect(WorkLogService.startSession(companyId, employeeId))
+      await expect(WorkLogService.startSession(companyId, employeeId, PERFORMED_BY))
         .rejects.toMatchObject({ name: 'WorkSessionActiveError' });
     });
   });
@@ -72,7 +76,7 @@ describe('WorkLogService', () => {
       (prisma.workSession.findUnique as jest.Mock).mockResolvedValue(mockSession);
       (prisma.workLog.create as jest.Mock).mockResolvedValue({ id: 'log-1' });
 
-      const result = await WorkLogService.stopSession(companyId, 'sess-1');
+      const result = await WorkLogService.stopSession(companyId, 'sess-1', PERFORMED_BY);
 
       expect(result.id).toBe('log-1');
       expect(prisma.workLog.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -96,7 +100,7 @@ describe('WorkLogService', () => {
         startTime: oldDate,
         endTime: new Date(oldDate.getTime() + 1000 * 60 * 60 * 8),
         reason: 'test'
-      }, false)).rejects.toMatchObject({ name: 'OutsideManualEntryWindowError' });
+      }, PERFORMED_BY, false)).rejects.toMatchObject({ name: 'OutsideManualEntryWindowError' });
     });
 
     it('should allow > 48h if isHR', async () => {
@@ -112,7 +116,7 @@ describe('WorkLogService', () => {
         startTime: oldDate,
         endTime: new Date(oldDate.getTime() + 1000 * 60 * 60 * 8),
         reason: 'test'
-      }, true);
+      }, PERFORMED_BY, true);
 
       expect(prisma.workLog.create).toHaveBeenCalled();
     });

@@ -5,13 +5,15 @@ import {
   UpdateEmployeeInput,
   ListEmployeesQuery,
 } from '@/lib/validators/employee';
+import { AuditService } from './auditService';
 
 export class EmployeeService {
   /**
    * RF-EMPL-001: Create employee with initial rate history entry.
    * If overtimeThreshold is set, it overrides company default.
    */
-  static async createEmployee(companyId: string, input: CreateEmployeeInput) {
+  static async createEmployee(companyId: string, input: CreateEmployeeInput, performedBy: string) {
+
     const { hourlyRate, ...employeeData } = input;
 
     // Create employee and first rate history entry in a transaction
@@ -39,7 +41,17 @@ export class EmployeeService {
           fieldName: 'CREATED',
           oldValue: null,
           newValue: JSON.stringify({ ...employeeData, hourlyRate }),
+          changedBy: performedBy,
         },
+      });
+
+      await AuditService.recordEvent({
+        companyId,
+        entityType: 'EMPLOYEE',
+        entityId: newEmployee.id,
+        action: 'CREATE',
+        performedBy,
+        metadata: { input },
       });
 
       return newEmployee;
@@ -131,7 +143,8 @@ export class EmployeeService {
   static async updateEmployee(
     companyId: string,
     employeeId: string,
-    input: UpdateEmployeeInput
+    input: UpdateEmployeeInput,
+    performedBy: string
   ) {
     const { hourlyRate, reason, ...updateData } = input;
 
@@ -187,9 +200,18 @@ export class EmployeeService {
           data: changes.map((change) => ({
             employeeId,
             ...change,
-            changedBy: null, // Will be populated when auth is implemented
+            changedBy: performedBy,
             reason: reason || null,
           })),
+        });
+
+        await AuditService.recordEvent({
+          companyId,
+          entityType: 'EMPLOYEE',
+          entityId: employeeId,
+          action: 'UPDATE',
+          performedBy,
+          metadata: { changes, reason },
         });
       }
 
@@ -214,7 +236,11 @@ export class EmployeeService {
    * RF-EMPL-005: Soft delete — set status to INACTIVE.
    * Historical data persists, employee cannot create sessions.
    */
-  static async deactivateEmployee(companyId: string, employeeId: string) {
+  static async deactivateEmployee(
+    companyId: string,
+    employeeId: string,
+    performedBy: string
+  ) {
     const current = await prisma.employee.findFirst({
       where: { id: employeeId, companyId },
     });
@@ -233,8 +259,16 @@ export class EmployeeService {
           fieldName: 'status',
           oldValue: current.status,
           newValue: 'INACTIVE',
-          changedBy: null, // Will be populated when auth is implemented
+          changedBy: performedBy,
         },
+      });
+
+      await AuditService.recordEvent({
+        companyId,
+        entityType: 'EMPLOYEE',
+        entityId: employeeId,
+        action: 'DEACTIVATE',
+        performedBy,
       });
     });
 

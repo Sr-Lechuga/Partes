@@ -5,6 +5,7 @@ import {
   UpdateMembershipInput,
   ListMembersQuery,
 } from '@/lib/validators/membership';
+import { AuditService } from './auditService';
 
 // ─── Custom error codes ─────────────────────────────────────────────────────
 
@@ -44,7 +45,8 @@ export class MembershipService {
    */
   static async createMembership(
     companyId: string,
-    input: CreateMembershipInput
+    input: CreateMembershipInput,
+    performedBy: string
   ) {
     // Verify company exists
     const company = await prisma.company.findUnique({ where: { id: companyId } });
@@ -62,6 +64,15 @@ export class MembershipService {
           role: input.role,
           status: 'ACTIVE',
         },
+      });
+
+      await AuditService.recordEvent({
+        companyId,
+        entityType: 'MEMBERSHIP',
+        entityId: membership.id,
+        action: 'CREATE',
+        performedBy,
+        metadata: { input },
       });
 
       return membership;
@@ -86,7 +97,8 @@ export class MembershipService {
   static async updateMembership(
     companyId: string,
     membershipId: string,
-    input: UpdateMembershipInput
+    input: UpdateMembershipInput,
+    performedBy: string
   ) {
     // Fetch the membership and verify it belongs to the company
     const current = await prisma.membership.findFirst({
@@ -121,6 +133,15 @@ export class MembershipService {
       },
     });
 
+    await AuditService.recordEvent({
+      companyId,
+      entityType: 'MEMBERSHIP',
+      entityId: membershipId,
+      action: 'UPDATE',
+      performedBy,
+      metadata: { input, oldValues: { role: current.role, status: current.status } },
+    });
+
     return updated;
   }
 
@@ -129,7 +150,11 @@ export class MembershipService {
    * Historical data persists; the deactivated member loses operating permissions.
    * Prevents deactivating the last active ADMIN.
    */
-  static async deactivateMembership(companyId: string, membershipId: string) {
+  static async deactivateMembership(
+    companyId: string,
+    membershipId: string,
+    performedBy: string
+  ) {
     const current = await prisma.membership.findFirst({
       where: { id: membershipId, companyId },
     });
@@ -157,6 +182,14 @@ export class MembershipService {
     const updated = await prisma.membership.update({
       where: { id: membershipId },
       data: { status: 'INACTIVE' },
+    });
+
+    await AuditService.recordEvent({
+      companyId,
+      entityType: 'MEMBERSHIP',
+      entityId: membershipId,
+      action: 'DEACTIVATE',
+      performedBy,
     });
 
     return updated;

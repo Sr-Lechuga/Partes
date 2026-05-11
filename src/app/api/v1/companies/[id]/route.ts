@@ -40,7 +40,7 @@ export const GET = withAuth(
 );
 
 export const PATCH = withAuth(
-  async (request, { companyId }) => {
+  async (request, { companyId, user }) => {
     try {
       const body = await request.json();
 
@@ -48,7 +48,7 @@ export const PATCH = withAuth(
       const data = updateCompanySchema.parse(body);
 
       // Update company
-      const company = await CompanyService.updateCompany(companyId!, data);
+      const company = await CompanyService.updateCompany(companyId!, data, user.uid);
 
       return NextResponse.json({ data: company });
     } catch (error: any) {

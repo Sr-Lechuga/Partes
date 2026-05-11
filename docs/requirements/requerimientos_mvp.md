@@ -79,9 +79,9 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-AUD-001 | Toda edición genera registro inmutable | Valor anterior, nuevo, usuario, timestamp, motivo | RF-AUTH-001, RF-MT-001 | ⬜ |
-| RF-AUD-002 | Consulta de audit events con filtros | Filtros: entityType, entityId, performedBy, fechas | RF-AUD-001 | ⬜ |
-| RF-AUD-003 | Audit events no editables ni eliminables | No existe endpoint de DELETE/PATCH para auditoría | RF-AUD-001 | ⬜ |
+| RF-AUD-001 | Toda edición genera registro inmutable | Valor anterior, nuevo, usuario, timestamp, motivo | RF-AUTH-001, RF-MT-001 | ✅ |
+| RF-AUD-002 | Consulta de audit events con filtros | Filtros: entityType, entityId, performedBy, fechas | RF-AUD-001 | ✅ |
+| RF-AUD-003 | Audit events no editables ni eliminables | No existe endpoint de DELETE/PATCH para auditoría | RF-AUD-001 | ✅ |
 
 ### 1.7 Analytics y Reportes
 
@@ -185,7 +185,7 @@
 | Empresas/Usuarios | 7 | 0 | 0 | 7 | 0 |
 | Empleados | 6 | 0 | 0 | 6 | 0 |
 | Jornadas/Horas | 9 | 0 | 0 | 9 | 0 |
-| Auditoría | 3 | 3 | 0 | 0 | 0 |
+| Auditoría | 3 | 0 | 0 | 3 | 0 |
 | Analytics | 5 | 5 | 0 | 0 | 0 |
 | Exportaciones | 3 | 3 | 0 | 0 | 0 |
 | Offline-First | 4 | 4 | 0 | 0 | 0 |
@@ -196,4 +196,4 @@
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **40** | **0** | **30** | **0** |
+| **TOTAL** | **70** | **37** | **0** | **33** | **0** |
