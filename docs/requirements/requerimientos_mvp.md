@@ -87,19 +87,19 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-ANA-001 | Resumen por empleado (horas + costos por período) | Filtro por fecha y empleado. Horas normales, extra, costos | RF-JOR-002, RF-CFG-001, RF-EMPL-001 | ⬜ |
-| RF-ANA-002 | Ranking de empleados por horas (desc) | Orden descendente por horas totales en período | RF-ANA-001 | ⬜ |
-| RF-ANA-003 | Ranking de empleados por costo (desc) | Orden descendente por costo total en período | RF-ANA-001 | ⬜ |
-| RF-ANA-004 | Agrupación por día/semana/quincena/mes | `groupBy` con totales correctos por período | RF-ANA-001 | ⬜ |
-| RF-ANA-005 | Costos nominales y extra por período | Tarifa vigente a la fecha de cada jornada | RF-ANA-001, RF-CFG-001 | ⬜ |
+| RF-ANA-001 | Resumen por empleado (horas + costos por período) | Filtro por fecha y empleado. Horas normales, extra, costos | RF-JOR-002, RF-CFG-001, RF-EMPL-001 | ✅ |
+| RF-ANA-002 | Ranking de empleados por horas (desc) | Orden descendente por horas totales en período | RF-ANA-001 | ✅ |
+| RF-ANA-003 | Ranking de empleados por costo (desc) | Orden descendente por costo total en período | RF-ANA-001 | ✅ |
+| RF-ANA-004 | Agrupación por día/semana/quincena/mes | `groupBy` con totales correctos por período | RF-ANA-001 | ✅ |
+| RF-ANA-005 | Costos nominales y extra por período | Tarifa vigente a la fecha de cada jornada | RF-ANA-001, RF-CFG-001 | ✅ |
 
 ### 1.8 Exportaciones
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-EXP-001 | Exportar a Excel (.xlsx) con datos de analytics | Archivo descargable con resumen y detalle | RF-ANA-001, RNF-ESC-005 | ⬜ |
-| RF-EXP-002 | Exportación asíncrona (retorna exportId) | Usuario consulta estado y descarga cuando listo | RF-EXP-001, RNF-ESC-005 | ⬜ |
-| RF-EXP-003 | Exportación asociada al usuario que la generó | Solo ese usuario puede descargarla | RF-EXP-002, RF-AUTH-001 | ⬜ |
+| RF-EXP-001 | Exportar a Excel (.xlsx) con datos de analytics | Archivo descargable con resumen y detalle | RF-ANA-001, RNF-ESC-005 | ✅ |
+| RF-EXP-002 | Exportación asíncrona (retorna exportId) | Usuario consulta estado y descarga cuando listo | RF-EXP-001, RNF-ESC-005 | ✅ |
+| RF-EXP-003 | Exportación asociada al usuario que la generó | Solo ese usuario puede descargarla | RF-EXP-002, RF-AUTH-001 | ✅ |
 
 ### 1.9 Offline-First
 
@@ -186,8 +186,8 @@
 | Empleados | 6 | 0 | 0 | 6 | 0 |
 | Jornadas/Horas | 9 | 0 | 0 | 9 | 0 |
 | Auditoría | 3 | 0 | 0 | 3 | 0 |
-| Analytics | 5 | 5 | 0 | 0 | 0 |
-| Exportaciones | 3 | 3 | 0 | 0 | 0 |
+| Analytics | 5 | 0 | 0 | 5 | 0 |
+| Exportaciones | 3 | 0 | 0 | 3 | 0 |
 | Offline-First | 4 | 4 | 0 | 0 | 0 |
 | Configuración | 2 | 2 | 0 | 0 | 0 |
 | RNF - Rendimiento | 2 | 2 | 0 | 0 | 0 |
@@ -196,4 +196,4 @@
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **37** | **0** | **33** | **0** |
+| **TOTAL** | **70** | **29** | **0** | **41** | **0** |

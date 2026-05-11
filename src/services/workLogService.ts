@@ -90,7 +90,21 @@ export class WorkLogService {
       const company = await tx.company.findUnique({ where: { id: companyId } });
       const threshold = session.employee.overtimeThreshold ?? company?.defaultThreshold ?? 8;
 
+      // Get effective rate at the time of work (RF-ANA-005)
+      const hourlyRate = await tx.employeeRateHistory.findFirst({
+        where: {
+          employeeId: session.employeeId,
+          effectiveFrom: { lte: session.startedAt },
+        },
+        orderBy: { effectiveFrom: 'desc' },
+      });
+
+      const rate = hourlyRate?.hourlyRate || new Decimal(0);
       const breakdown = calculateHours(session.startedAt, endedAt, threshold);
+
+      // Cost calculation: (normal * rate) + (extra * rate * 2)
+      const totalCost = new Decimal(breakdown.normal).mul(rate)
+        .add(new Decimal(breakdown.extra).mul(rate).mul(2));
 
       const workLog = await tx.workLog.create({
         data: {
@@ -102,6 +116,8 @@ export class WorkLogService {
           totalHours: new Decimal(breakdown.total),
           normalHours: new Decimal(breakdown.normal),
           extraHours: new Decimal(breakdown.extra),
+          hourlyRate: rate,
+          totalCost: totalCost,
           source: 'timer',
           status: 'PENDING',
         },
@@ -157,7 +173,22 @@ export class WorkLogService {
     }
 
     const threshold = employee.overtimeThreshold ?? employee.company.defaultThreshold;
+    
+    // Get effective rate at the time of work (RF-ANA-005)
+    const hourlyRateEntry = await prisma.employeeRateHistory.findFirst({
+      where: {
+        employeeId: data.employeeId,
+        effectiveFrom: { lte: data.date },
+      },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+
+    const rate = hourlyRateEntry?.hourlyRate || new Decimal(0);
     const breakdown = calculateHours(data.startTime, data.endTime, threshold);
+
+    // Cost calculation
+    const totalCost = new Decimal(breakdown.normal).mul(rate)
+      .add(new Decimal(breakdown.extra).mul(rate).mul(2));
 
     const workLog = await prisma.workLog.create({
       data: {
@@ -169,6 +200,8 @@ export class WorkLogService {
         totalHours: new Decimal(breakdown.total),
         normalHours: new Decimal(breakdown.normal),
         extraHours: new Decimal(breakdown.extra),
+        hourlyRate: rate,
+        totalCost: totalCost,
         source: 'manual',
         status: 'PENDING',
       },
@@ -274,11 +307,17 @@ export class WorkLogService {
         const threshold = existing.employee.overtimeThreshold ?? existing.employee.company.defaultThreshold;
         const breakdown = calculateHours(newStartTime, newEndTime, threshold);
 
+        // Recalculate cost if hours changed, using the original rate of that log
+        const rate = existing.hourlyRate || new Decimal(0);
+        const totalCost = new Decimal(breakdown.normal).mul(rate)
+          .add(new Decimal(breakdown.extra).mul(rate).mul(2));
+
         updateData.startTime = newStartTime;
         updateData.endTime = newEndTime;
         updateData.totalHours = new Decimal(breakdown.total);
         updateData.normalHours = new Decimal(breakdown.normal);
         updateData.extraHours = new Decimal(breakdown.extra);
+        updateData.totalCost = totalCost;
       }
 
       // Record history for changes

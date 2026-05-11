@@ -127,6 +127,8 @@ model WorkLog {
   totalHours       Decimal  @db.Decimal(5, 2)
   normalHours      Decimal  @db.Decimal(5, 2)
   extraHours       Decimal  @db.Decimal(5, 2)
+  hourlyRate       Decimal? @db.Decimal(10, 2) // Denormalized for historical accuracy (RF-ANA-005)
+  totalCost        Decimal? @db.Decimal(12, 2) // Denormalized for analytics performance
   status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
   source           String   @default("timer") // timer, manual
   rejectionReason  String?
@@ -171,4 +173,22 @@ model AuditEvent {
   @@index([companyId, performedAt])
   @@index([entityType, entityId])
   @@map("audit_events")
-}
+}
+
+// RF-EXP-002 / RF-EXP-003: Asynchronous export tracking
+model ExportTask {
+  id         String   @id @default(uuid())
+  companyId  String
+  userId     String   // firebaseUid
+  type       String   // e.g. "ANALYTICS_EXCEL"
+  status     String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  filters    Json?    // Filters used for the export
+  fileUrl    String?  // URL to download the file
+  error      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([companyId, userId])
+  @@map("export_tasks")
+}
+
