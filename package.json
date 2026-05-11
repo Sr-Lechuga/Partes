@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push"
   },
@@ -18,12 +22,15 @@
     "zod": "^3.23.6"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.12.11",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.3",
+    "jest": "^30.3.0",
     "prisma": "^5.13.0",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.4.5"
   }
 }

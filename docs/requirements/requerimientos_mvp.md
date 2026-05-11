@@ -54,12 +54,12 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Estado |
 |----|--------------|------------------------|--------|
-| RF-EMPL-001 | Alta de empleado (nombre, doc, tel, tarifa, threshold opcional) | Empleado creado. Si se define threshold, prima sobre el de la empresa | ⬜ |
-| RF-EMPL-002 | Listar empleados con filtros y paginación | Filtros: status, search (nombre/doc), paginación | ⬜ |
-| RF-EMPL-003 | Ver detalle de empleado con tarifa vigente | Info completa incluyendo tarifa actual | ⬜ |
-| RF-EMPL-004 | Editar datos de empleado (RRHH) | Cambios persistidos con historial | ⬜ |
-| RF-EMPL-005 | Baja lógica (estado INACTIVE, datos persisten) | No puede crear sesiones, historial intacto | ⬜ |
-| RF-EMPL-006 | Historial general del empleado | Timeline con cambios de datos, jornales y tarifas | ⬜ |
+| RF-EMPL-001 | Alta de empleado (nombre, doc, tel, tarifa, threshold opcional) | Empleado creado. Si se define threshold, prima sobre el de la empresa | ✅ |
+| RF-EMPL-002 | Listar empleados con filtros y paginación | Filtros: status, search (nombre/doc), paginación | ✅ |
+| RF-EMPL-003 | Ver detalle de empleado con tarifa vigente | Info completa incluyendo tarifa actual | ✅ |
+| RF-EMPL-004 | Editar datos de empleado (RRHH) | Cambios persistidos con historial | ✅ |
+| RF-EMPL-005 | Baja lógica (estado INACTIVE, datos persisten) | No puede crear sesiones, historial intacto | ✅ |
+| RF-EMPL-006 | Historial general del empleado | Timeline con cambios de datos, jornales y tarifas | ✅ |
 
 ### 1.5 Jornadas y Horas
 

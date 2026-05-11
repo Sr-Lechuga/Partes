@@ -9,13 +9,67 @@ datasource db {
 }
 
 model Company {
-  id               String   @id @default(uuid())
+  id               String     @id @default(uuid())
   name             String
-  defaultThreshold Int      @default(8) // RF-EMP-001 and RF-CFG-002
-  currency         String   @default("UYU") // RNF-LOC-002
-  status           String   @default("ACTIVE") // ACTIVE, INACTIVE for soft delete
+  defaultThreshold Int        @default(8) // RF-EMP-001 and RF-CFG-002
+  currency         String     @default("UYU") // RNF-LOC-002
+  status           String     @default("ACTIVE") // ACTIVE, INACTIVE for soft delete
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  employees Employee[]
+
+  @@map("companies")
+}
+
+// RF-EMPL-001: Employee belongs to a company, threshold overrides company default
+model Employee {
+  id               String   @id @default(uuid())
+  companyId        String
+  name             String
+  documentNumber   String   // CI or identification number
+  phone            String?
+  overtimeThreshold Int?    // If set, overrides company defaultThreshold (RF-EMPL-001)
+  status           String   @default("ACTIVE") // ACTIVE, INACTIVE for soft delete (RF-EMPL-005)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  @@map("companies")
+  company       Company                @relation(fields: [companyId], references: [id])
+  rateHistory   EmployeeRateHistory[]
+  changeHistory EmployeeChangeHistory[]
+
+  @@unique([companyId, documentNumber]) // Same document can't exist twice in the same company
+  @@index([companyId, status])
+  @@map("employees")
+}
+
+// RF-CFG-001: Hourly rate with effective date per employee, history is immutable
+model EmployeeRateHistory {
+  id            String   @id @default(uuid())
+  employeeId    String
+  hourlyRate    Decimal  @db.Decimal(10, 2) // Rate in company currency
+  effectiveFrom DateTime @default(now())    // When this rate starts to apply
+  createdAt     DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, effectiveFrom])
+  @@map("employee_rate_history")
+}
+
+// RF-EMPL-004 / RF-EMPL-006: Change history for audit trail
+model EmployeeChangeHistory {
+  id          String   @id @default(uuid())
+  employeeId  String
+  fieldName   String   // Which field was changed
+  oldValue    String?  // Previous value (null for creation)
+  newValue    String?  // New value (null for deletion)
+  changedBy   String?  // User who made the change (will be populated with auth)
+  reason      String?  // Optional reason for the change
+  createdAt   DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, createdAt])
+  @@map("employee_change_history")
 }
