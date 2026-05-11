@@ -62,6 +62,8 @@ model Employee {
   company       Company                @relation(fields: [companyId], references: [id])
   rateHistory   EmployeeRateHistory[]
   changeHistory EmployeeChangeHistory[]
+  workSessions  WorkSession[]
+  workLogs      WorkLog[]
 
   @@unique([companyId, documentNumber]) // Same document can't exist twice in the same company
   @@index([companyId, status])
@@ -98,3 +100,75 @@ model EmployeeChangeHistory {
   @@index([employeeId, createdAt])
   @@map("employee_change_history")
 }
+
+// RF-JOR-001: Active timer session
+model WorkSession {
+  id         String   @id @default(uuid())
+  employeeId String
+  companyId  String
+  startedAt  DateTime
+  source     String   @default("mobile") // mobile, manual
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, companyId])
+  @@map("work_sessions")
+}
+
+// RF-JOR-002: Consolidated record of work hours
+model WorkLog {
+  id               String   @id @default(uuid())
+  employeeId       String
+  companyId        String
+  date             DateTime // The working day
+  startTime        DateTime
+  endTime          DateTime
+  totalHours       Decimal  @db.Decimal(5, 2)
+  normalHours      Decimal  @db.Decimal(5, 2)
+  extraHours       Decimal  @db.Decimal(5, 2)
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  source           String   @default("timer") // timer, manual
+  rejectionReason  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  history  WorkLogHistory[]
+
+  @@index([employeeId, companyId, date])
+  @@map("work_logs")
+}
+
+// RF-AUD-001: Audit trail for WorkLog edits
+model WorkLogHistory {
+  id         String   @id @default(uuid())
+  workLogId  String
+  changedBy  String   // firebaseUid
+  fieldName  String
+  oldValue   String?
+  newValue   String?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  workLog WorkLog @relation(fields: [workLogId], references: [id])
+
+  @@index([workLogId, createdAt])
+  @@map("work_log_history")
+}
+
+// RF-AUD-001: Generic audit event for the system
+model AuditEvent {
+  id          String   @id @default(uuid())
+  companyId   String
+  entityType  String   // COMPANY, EMPLOYEE, MEMBERSHIP, WORK_LOG
+  entityId    String
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  performedBy String   // firebaseUid
+  performedAt DateTime @default(now())
+  metadata    Json?    // Optional JSON with before/after state
+
+  @@index([companyId, performedAt])
+  @@index([entityType, entityId])
+  @@map("audit_events")
+}
