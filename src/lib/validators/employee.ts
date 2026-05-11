@@ -18,6 +18,7 @@ export const updateEmployeeSchema = z.object({
   phone: z.string().max(20).optional().nullable(),
   overtimeThreshold: z.number().int().min(1).max(24).optional().nullable(),
   hourlyRate: z.number().positive('Hourly rate must be positive').optional(),
+  effectiveFrom: z.coerce.date().optional(), // RF-CFG-001
   reason: z.string().max(500).optional(),
 });
 
@@ -32,3 +33,13 @@ export const listEmployeesQuerySchema = z.object({
 });
 
 export type ListEmployeesQuery = z.infer<typeof listEmployeesQuerySchema>;
+
+// RF-CFG-001: Explicit rate addition
+export const addRateSchema = z.object({
+  hourlyRate: z.number().positive('Hourly rate must be positive'),
+  effectiveFrom: z.coerce.date().default(() => new Date()),
+  reason: z.string().max(500).optional(),
+});
+
+export type AddRateInput = z.infer<typeof addRateSchema>;
+

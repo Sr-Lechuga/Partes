@@ -4,6 +4,7 @@ import {
   CreateEmployeeInput,
   UpdateEmployeeInput,
   ListEmployeesQuery,
+  AddRateInput,
 } from '@/lib/validators/employee';
 import { AuditService } from './auditService';
 
@@ -146,7 +147,7 @@ export class EmployeeService {
     input: UpdateEmployeeInput,
     performedBy: string
   ) {
-    const { hourlyRate, reason, ...updateData } = input;
+    const { hourlyRate, effectiveFrom, reason, ...updateData } = input;
 
     // Fetch current employee to compare changes
     const current = await prisma.employee.findFirst({
@@ -183,7 +184,7 @@ export class EmployeeService {
             data: {
               employeeId,
               hourlyRate: new Prisma.Decimal(hourlyRate),
-              effectiveFrom: new Date(),
+              effectiveFrom: effectiveFrom || new Date(),
             },
           });
           changes.push({
@@ -302,5 +303,56 @@ export class EmployeeService {
       changeHistory,
       rateHistory,
     };
+  }
+
+  /**
+   * RF-CFG-001: Explicitly add a new rate history entry.
+   */
+  static async addRateHistory(
+    companyId: string,
+    employeeId: string,
+    input: AddRateInput,
+    performedBy: string
+  ) {
+    const { hourlyRate, effectiveFrom, reason } = input;
+
+    // Verify employee belongs to company
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId },
+    });
+
+    if (!employee) return null;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.employeeRateHistory.create({
+        data: {
+          employeeId,
+          hourlyRate: new Prisma.Decimal(hourlyRate),
+          effectiveFrom,
+        },
+      });
+
+      await tx.employeeChangeHistory.create({
+        data: {
+          employeeId,
+          fieldName: 'hourlyRate',
+          oldValue: null, // We could fetch current but it's optional for history detail
+          newValue: String(hourlyRate),
+          changedBy: performedBy,
+          reason: reason || 'Ajuste manual de tarifa',
+        },
+      });
+
+      await AuditService.recordEvent({
+        companyId,
+        entityType: 'EMPLOYEE',
+        entityId: employeeId,
+        action: 'UPDATE',
+        performedBy,
+        metadata: { action: 'ADD_RATE', hourlyRate, effectiveFrom, reason },
+      });
+    });
+
+    return this.getEmployeeById(companyId, employeeId);
   }
 }

@@ -114,8 +114,8 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-CFG-001 | Tarifa por hora con fecha efectiva por empleado | Tarifa vigente según fecha. Historial no eliminable | RF-EMPL-001 | ⬜ |
-| RF-CFG-002 | Threshold de horas normales configurable (default 8h) | Configurable por empresa. Extra = horas > threshold | RF-EMP-001 | ⬜ |
+| RF-CFG-001 | Tarifa por hora con fecha efectiva por empleado | Tarifa vigente según fecha. Historial no eliminable | RF-EMPL-001 | ✅ |
+| RF-CFG-002 | Threshold de horas normales configurable (default 8h) | Configurable por empresa. Extra = horas > threshold | RF-EMP-001 | ✅ |
 
 ---
 
@@ -189,11 +189,11 @@
 | Analytics | 5 | 0 | 0 | 5 | 0 |
 | Exportaciones | 3 | 0 | 0 | 3 | 0 |
 | Offline-First | 4 | 4 | 0 | 0 | 0 |
-| Configuración | 2 | 2 | 0 | 0 | 0 |
+| Configuración | 2 | 0 | 0 | 2 | 0 |
 | RNF - Rendimiento | 2 | 2 | 0 | 0 | 0 |
 | RNF - Seguridad | 4 | 4 | 0 | 0 | 0 |
 | RNF - Usabilidad | 3 | 3 | 0 | 0 | 0 |
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **29** | **0** | **41** | **0** |
+| **TOTAL** | **70** | **27** | **0** | **43** | **0** |

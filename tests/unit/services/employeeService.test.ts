@@ -84,4 +84,27 @@ describe('EmployeeService', () => {
       }));
     });
   });
+
+  describe('addRateHistory', () => {
+    it('should explicitly add a new rate and log it', async () => {
+      const mockEmployee = { id: 'emp-1', companyId, rateHistory: [] };
+      (prisma.employee.findFirst as jest.Mock).mockResolvedValue(mockEmployee);
+      
+      const effectiveFrom = new Date('2024-02-01');
+      await EmployeeService.addRateHistory(
+        companyId,
+        'emp-1',
+        { hourlyRate: 150, effectiveFrom, reason: 'Aumento' },
+        PERFORMED_BY
+      );
+
+      expect(prisma.employeeRateHistory.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          hourlyRate: new Decimal(150),
+          effectiveFrom,
+        })
+      }));
+      expect(prisma.auditEvent.create).toHaveBeenCalled();
+    });
+  });
 });
