@@ -18,8 +18,33 @@ model Company {
   updatedAt        DateTime   @updatedAt
 
   employees Employee[]
+  members   Membership[]
 
   @@map("companies")
+}
+
+// RF-USR-001 / RF-USR-002 / RF-USR-003 / RF-USR-004
+// A Membership links a user (identified by firebaseUid) to a company with a role.
+// Roles: ADMIN | HR | EMPLOYEE
+// Status: ACTIVE | INACTIVE (soft delete — historical data persists)
+model Membership {
+  id          String   @id @default(uuid())
+  companyId   String
+  firebaseUid String   // Firebase user UID
+  email       String   // Denormalized for display without extra auth calls
+  name        String   // Denormalized display name
+  role        String   @default("HR") // ADMIN | HR | EMPLOYEE
+  status      String   @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  // A user can only have one active membership per company
+  @@unique([companyId, firebaseUid])
+  @@index([companyId, status])
+  @@index([firebaseUid])
+  @@map("memberships")
 }
 
 // RF-EMPL-001: Employee belongs to a company, threshold overrides company default
