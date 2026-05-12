@@ -105,10 +105,10 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-OFF-001 | Cola offline local (IndexedDB) | Inicio/cierre de jornadas offline encolados localmente | RF-JOR-001, RF-JOR-002 | ⬜ |
-| RF-OFF-002 | Sincronización automática al reconectar | Operaciones enviadas vía `/sync/batch`. Sin pérdida | RF-OFF-001, RF-AUTH-003 | ⬜ |
-| RF-OFF-003 | Idempotencia en sync (duplicados → `duplicate`) | Operación ya aplicada retorna `duplicate` sin error | RF-OFF-002 | ⬜ |
-| RF-OFF-004 | Manejo de conflictos con detalle | Backend retorna detalle del conflicto para resolución | RF-OFF-002 | ⬜ |
+| RF-OFF-001 | Cola offline local (IndexedDB) | Almacenamiento local persistente hasta sync | RF-JOR-001 | ✅ |
+| RF-OFF-002 | Sincronización automática al recuperar conexión | Endpoint `/sync/batch` para procesamiento masivo | RF-OFF-001 | ✅ |
+| RF-OFF-003 | Idempotencia: acciones duplicadas se ignoran | Uso de `clientGeneratedId` (UUID) en el backend | RF-OFF-002 | ✅ |
+| RF-OFF-004 | Manejo de conflictos (ej. sesión ya activa) | El backend reporta status por cada ítem del batch | RF-OFF-002 | ✅ |
 
 ### 1.10 Configuración
 
@@ -188,7 +188,7 @@
 | Auditoría | 3 | 0 | 0 | 3 | 0 |
 | Analytics | 5 | 0 | 0 | 5 | 0 |
 | Exportaciones | 3 | 0 | 0 | 3 | 0 |
-| Offline-First | 4 | 4 | 0 | 0 | 0 |
+| Offline-First | 4 | 0 | 0 | 4 | 0 |
 | Configuración | 2 | 0 | 0 | 2 | 0 |
 | RNF - Rendimiento | 2 | 2 | 0 | 0 | 0 |
 | RNF - Seguridad | 4 | 4 | 0 | 0 | 0 |
@@ -196,4 +196,4 @@
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **27** | **0** | **43** | **0** |
+| **TOTAL** | **70** | **23** | **0** | **47** | **0** |

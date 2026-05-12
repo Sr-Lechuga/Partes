@@ -108,6 +108,7 @@ model WorkSession {
   companyId  String
   startedAt  DateTime
   source     String   @default("mobile") // mobile, manual
+  syncId     String?  @unique // RF-OFF-003: Idempotency
   createdAt  DateTime @default(now())
 
   employee Employee @relation(fields: [employeeId], references: [id])
@@ -131,6 +132,7 @@ model WorkLog {
   totalCost        Decimal? @db.Decimal(12, 2) // Denormalized for analytics performance
   status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
   source           String   @default("timer") // timer, manual
+  syncId           String?  @unique // RF-OFF-003: Idempotency
   rejectionReason  String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -141,6 +143,7 @@ model WorkLog {
   @@index([employeeId, companyId, date])
   @@map("work_logs")
 }
+
 
 // RF-AUD-001: Audit trail for WorkLog edits
 model WorkLogHistory {

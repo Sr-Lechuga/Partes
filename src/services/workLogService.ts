@@ -35,7 +35,8 @@ export class WorkLogService {
     companyId: string,
     employeeId: string,
     performedBy: string,
-    source: string = 'mobile'
+    source: string = 'mobile',
+    syncId?: string
   ) {
     // Check for existing session
     const activeSession = await prisma.workSession.findFirst({
@@ -52,6 +53,7 @@ export class WorkLogService {
         employeeId,
         startedAt: new Date(),
         source,
+        syncId,
       },
     });
 
@@ -74,7 +76,8 @@ export class WorkLogService {
     companyId: string,
     sessionId: string,
     performedBy: string,
-    endedAt: Date = new Date()
+    endedAt: Date = new Date(),
+    syncId?: string
   ) {
     return prisma.$transaction(async (tx) => {
       const session = await tx.workSession.findUnique({
@@ -120,6 +123,7 @@ export class WorkLogService {
           totalCost: totalCost,
           source: 'timer',
           status: 'PENDING',
+          syncId,
         },
       });
 
@@ -152,7 +156,8 @@ export class WorkLogService {
       reason: string;
     },
     performedBy: string,
-    isHR: boolean = false
+    isHR: boolean = false,
+    syncId?: string
   ) {
     // RF-JOR-003: 48h window check for non-HR
     if (!isHR) {
@@ -204,6 +209,7 @@ export class WorkLogService {
         totalCost: totalCost,
         source: 'manual',
         status: 'PENDING',
+        syncId,
       },
     });
 
