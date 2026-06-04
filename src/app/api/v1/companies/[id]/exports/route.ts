@@ -1,53 +1,38 @@
-import { NextRequest } from 'next/server';
-import { withAuth } from '@/lib/auth';
+import { withAuth } from '@/lib/api-utils';
 import { ExportService } from '@/services/exportService';
 import { analyticsQuerySchema } from '@/lib/validators/analytics';
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
+import { createErrorResponse } from '@/lib/api-utils';
 
 /**
- * RF-EXP-002: Initiate an export task
+ * POST /api/v1/companies/[id]/exports
+ * Generate and stream an Excel export directly — no filesystem or task persistence.
  */
 export const POST = withAuth(
-  async (req: NextRequest, { params, user }) => {
+  async (req: Request, { params }) => {
     try {
       const body = await req.json();
       const query = analyticsQuerySchema.parse(body);
 
-      const task = await ExportService.createExportTask(
-        params.id,
-        user.uid,
-        'ANALYTICS_EXCEL',
-        query
-      );
+      const from = query.from ? new Date(query.from) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const to = query.to ? new Date(query.to) : new Date();
 
-      return createSuccessResponse(task, 202); // 202 Accepted
+      const buffer = await ExportService.generateExcelBuffer(params.id, { from, to });
+
+      const date = new Date().toISOString().split('T')[0];
+
+      return new Response(buffer as unknown as BodyInit, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="export-${params.id}-${date}.xlsx"`,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
         return createErrorResponse(error.message, 400);
       }
-      return createErrorResponse('Error interno', 500);
+      return createErrorResponse('Error interno al generar exportación', 500);
     }
   },
-  { roles: ['ADMIN', 'HR'], checkCompanyAccess: true }
-);
-
-/**
- * List recent exports for the company
- */
-export const GET = withAuth(
-  async (req: NextRequest, { params, user }) => {
-    try {
-      const { prisma } = await import('@/lib/prisma');
-      const exports = await prisma.exportTask.findMany({
-        where: { companyId: params.id },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      });
-
-      return createSuccessResponse(exports);
-    } catch (error) {
-      return createErrorResponse('Error al listar exportaciones', 500);
-    }
-  },
-  { roles: ['ADMIN', 'HR'], checkCompanyAccess: true }
+  { requiredRoles: ['ADMIN', 'HR'], checkCompanyAccess: true }
 );
