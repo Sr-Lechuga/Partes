@@ -1,4 +1,4 @@
-import { withAuth } from '@/lib/api-utils';
+import { withAuth, createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
 import { verifyToken, validateCompanyAccess } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
@@ -97,5 +97,62 @@ describe('withAuth Wrapper', () => {
       companyId: 'comp-1',
       role: 'ADMIN'
     }));
+  });
+});
+
+describe('createSuccessResponse', () => {
+  it('should return 200 with data wrapped in a data key', async () => {
+    const payload = { id: '123', name: 'Test' };
+
+    const response = createSuccessResponse(payload);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data).toEqual(payload);
+  });
+
+  it('should return a custom status code when provided', async () => {
+    const payload = { created: true };
+
+    const response = createSuccessResponse(payload, 201);
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.data).toEqual(payload);
+  });
+});
+
+describe('createErrorResponse', () => {
+  it('should return 500 with INTERNAL_SERVER_ERROR code by default', async () => {
+    const response = createErrorResponse('Unexpected failure');
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error.code).toBe('INTERNAL_SERVER_ERROR');
+    expect(body.error.message).toBe('Unexpected failure');
+  });
+
+  it('should return 404 with NOT_FOUND code when status is 404', async () => {
+    const response = createErrorResponse('Resource not found', 404);
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('should return 401 with UNAUTHORIZED code when status is 401', async () => {
+    const response = createErrorResponse('Token missing', 401);
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('should return 403 with FORBIDDEN code when status is 403', async () => {
+    const response = createErrorResponse('Access denied', 403);
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('FORBIDDEN');
   });
 });

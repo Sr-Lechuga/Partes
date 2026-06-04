@@ -1,5 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyToken, validateCompanyAccess, AuthUser } from './auth';
+
+/**
+ * Creates a standardized JSON success response.
+ */
+export function createSuccessResponse(data: unknown, status = 200): NextResponse {
+  return NextResponse.json({ data }, { status });
+}
+
+/**
+ * Creates a standardized JSON error response.
+ */
+export function createErrorResponse(message: string, status = 500): NextResponse {
+  const code =
+    status === 401
+      ? 'UNAUTHORIZED'
+      : status === 403
+        ? 'FORBIDDEN'
+        : status === 404
+          ? 'NOT_FOUND'
+          : status === 400
+            ? 'BAD_REQUEST'
+            : 'INTERNAL_SERVER_ERROR';
+
+  return NextResponse.json({ error: { code, message } }, { status });
+}
 
 export type AuthenticatedHandler = (
   request: Request,
