@@ -2,7 +2,7 @@
 
 > **Proyecto:** Micro SaaS — Sistema de Registro de Jornales  
 > **Versión:** MVP  
-> **Última actualización:** 2026-05-11  
+> **Última actualización:** 2026-05-11 (Fase 4: Jornadas y Horas completada)  
 
 ---
 
@@ -24,19 +24,19 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-AUTH-001 | Login con Google (Firebase Auth) | El usuario inicia sesión y recibe JWT con contexto de empresa/rol | — | ⬜ |
-| RF-AUTH-002 | Login con número de teléfono (SMS/OTP) | El usuario se autentica y recupera sesión | — | ⬜ |
-| RF-AUTH-003 | Refresh de sesión con refresh token | JWT se renueva sin nuevo login | RF-AUTH-001, RF-AUTH-002 | ⬜ |
-| RF-AUTH-004 | Logout con revocación de tokens | Tokens invalidados al cerrar sesión | RF-AUTH-001, RF-AUTH-002 | ⬜ |
-| RF-AUTH-005 | Endpoint `/auth/me` con usuario, roles y empresas | Respuesta incluye id, name, email, empresas y roles | RF-AUTH-001, RF-MT-003 | ⬜ |
+| RF-AUTH-001 | Login con Google (Firebase Auth) | El usuario inicia sesión y recibe JWT con contexto de empresa/rol | — | ✅ |
+| RF-AUTH-002 | Login con número de teléfono (SMS/OTP) | El usuario se autentica y recupera sesión | — | ✅ |
+| RF-AUTH-003 | Refresh de sesión con refresh token | JWT se renueva sin nuevo login | RF-AUTH-001, RF-AUTH-002 | ✅ |
+| RF-AUTH-004 | Logout con revocación de tokens | Tokens invalidados al cerrar sesión | RF-AUTH-001, RF-AUTH-002 | ✅ |
+| RF-AUTH-005 | Endpoint `/auth/me` con usuario, roles y empresas | Respuesta incluye id, name, email, empresas y roles | RF-AUTH-001, RF-MT-003 | ✅ |
 
 ### 1.2 Multi-Tenancy
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-MT-001 | Aislamiento total de datos por empresa | Ningún usuario ve datos de otra empresa. Toda query filtra por `companyId` | RF-EMP-001 | ⬜ |
-| RF-MT-002 | Contexto de empresa explícito en cada request | Requests sin `companyId` válido retornan `403` | RF-AUTH-001, RF-EMP-001 | ⬜ |
-| RF-MT-003 | Membresía multi-empresa con roles distintos | Usuario ve listado de empresas y puede cambiar contexto | RF-AUTH-001, RF-EMP-001, RF-USR-001 | ⬜ |
+| RF-MT-001 | Aislamiento total de datos por empresa | Ningún usuario ve datos de otra empresa. Toda query filtra por `companyId` | RF-EMP-001 | ✅ |
+| RF-MT-002 | Contexto de empresa explícito en cada request | Requests sin `companyId` válido retornan `403` | RF-AUTH-001, RF-EMP-001 | ✅ |
+| RF-MT-003 | Membresía multi-empresa con roles distintos | Usuario ve listado de empresas y puede cambiar contexto | RF-AUTH-001, RF-EMP-001, RF-USR-001 | ✅ |
 
 ### 1.3 Gestión de Empresas y Usuarios
 
@@ -45,10 +45,10 @@
 | RF-EMP-001 | Crear empresa con nombre y config base | Empresa creada con threshold por defecto, moneda y datos iniciales | RF-AUTH-001 | ✅ |
 | RF-EMP-002 | Ver datos de empresa autenticada | Retorna nombre, configuración y datos básicos | RF-EMP-001 | ✅ |
 | RF-EMP-003 | Editar datos de empresa (solo ADMIN) | Cambios persistidos, validación de rol | RF-EMP-001, RF-MT-002 | ✅ |
-| RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | RF-AUTH-001, RF-EMP-001 | ⬜ |
-| RF-USR-002 | Editar membresía (cambio de rol/estado) | Cambio reflejado inmediatamente en permisos | RF-USR-001 | ⬜ |
-| RF-USR-003 | Desactivar membresía (datos históricos persisten) | Usuario desactivado no puede operar | RF-USR-001 | ⬜ |
-| RF-USR-004 | Listar miembros con roles (paginado) | Listado con nombre, email, rol y estado | RF-USR-001 | ⬜ |
+| RF-USR-001 | Crear/asignar usuario RRHH (solo ADMIN) | Usuario queda con rol `HR` en la empresa | RF-AUTH-001, RF-EMP-001 | ✅ |
+| RF-USR-002 | Editar membresía (cambio de rol/estado) | Cambio reflejado inmediatamente en permisos | RF-USR-001 | ✅ |
+| RF-USR-003 | Desactivar membresía (datos históricos persisten) | Usuario desactivado no puede operar | RF-USR-001 | ✅ |
+| RF-USR-004 | Listar miembros con roles (paginado) | Listado con nombre, email, rol y estado | RF-USR-001 | ✅ |
 
 ### 1.4 Gestión de Empleados
 
@@ -65,57 +65,57 @@
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-JOR-001 | Iniciar jornada (timer, máx 1 sesión activa) | Se crea `WorkSession` activa. Error si ya existe una | RF-EMPL-001, RF-MT-002, RF-CFG-002 | ⬜ |
-| RF-JOR-002 | Finalizar jornada con cálculo automático | Duración total, horas normales y extra calculadas | RF-JOR-001, RF-JOR-004 | ⬜ |
-| RF-JOR-003 | Carga manual (máx 48h atraso, fuera → `422`) | RRHH o empleado carga con inicio/fin. Validación de ventana | RF-EMPL-001, RF-JOR-004, RF-MT-002 | ⬜ |
-| RF-JOR-004 | Cálculo automático horas extra (> threshold = extra x2) | Horas > threshold del empleado (o default empresa) marcadas extra, costo x2 | RF-CFG-002, RF-CFG-001 | ⬜ |
-| RF-JOR-005 | Empleado ve historial propio filtrable por fecha | Listado con horas normales, extra y estado | RF-JOR-002, RF-AUTH-001 | ⬜ |
-| RF-JOR-006 | RRHH lista todas las jornadas (filtros + paginación) | Filtros: employeeId, fechas, status, approvalStatus | RF-JOR-002, RF-USR-001 | ⬜ |
-| RF-JOR-007 | Ver detalle completo de un WorkLog | Inicio, fin, duración, horas, costo, estado | RF-JOR-002 | ⬜ |
-| RF-JOR-008 | Editar jornada (solo HR, con auditoría completa) | WorkLogHistory con antes/después, usuario, timestamp, motivo. Recalcula costos | RF-JOR-007, RF-AUD-001, RF-USR-001 | ⬜ |
-| RF-JOR-009 | Empleado NO puede editar/eliminar registros | Intentos retornan `403 Forbidden` | RF-MT-002, RNF-SEC-002 | ⬜ |
+| RF-JOR-001 | Iniciar jornada (timer, máx 1 sesión activa) | Se crea `WorkSession` activa. Error si ya existe una | RF-EMPL-001, RF-MT-002, RF-CFG-002 | ✅ |
+| RF-JOR-002 | Finalizar jornada con cálculo automático | Duración total, horas normales y extra calculadas | RF-JOR-001, RF-JOR-004 | ✅ |
+| RF-JOR-003 | Carga manual (máx 48h atraso, fuera → `422`) | RRHH o empleado carga con inicio/fin. Validación de ventana | RF-EMPL-001, RF-JOR-004, RF-MT-002 | ✅ |
+| RF-JOR-004 | Cálculo automático horas extra (> threshold = extra x2) | Horas > threshold del empleado (o default empresa) marcadas extra, costo x2 | RF-CFG-002, RF-CFG-001 | ✅ |
+| RF-JOR-005 | Empleado ve historial propio filtrable por fecha | Listado con horas normales, extra y estado | RF-JOR-002, RF-AUTH-001 | ✅ |
+| RF-JOR-006 | RRHH lista todas las jornadas (filtros + paginación) | Filtros: employeeId, fechas, status, approvalStatus | RF-JOR-002, RF-USR-001 | ✅ |
+| RF-JOR-007 | Ver detalle completo de un WorkLog | Inicio, fin, duración, horas, costo, estado | RF-JOR-002 | ✅ |
+| RF-JOR-008 | Editar jornada (solo HR, con auditoría completa) | WorkLogHistory con antes/después, usuario, timestamp, motivo. Recalcula costos | RF-JOR-007, RF-AUD-001, RF-USR-001 | ✅ |
+| RF-JOR-009 | Empleado NO puede editar/eliminar registros | Intentos retornan `403 Forbidden` | RF-MT-002, RNF-SEC-002 | ✅ |
 
 ### 1.6 Auditoría
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-AUD-001 | Toda edición genera registro inmutable | Valor anterior, nuevo, usuario, timestamp, motivo | RF-AUTH-001, RF-MT-001 | ⬜ |
-| RF-AUD-002 | Consulta de audit events con filtros | Filtros: entityType, entityId, performedBy, fechas | RF-AUD-001 | ⬜ |
-| RF-AUD-003 | Audit events no editables ni eliminables | No existe endpoint de DELETE/PATCH para auditoría | RF-AUD-001 | ⬜ |
+| RF-AUD-001 | Toda edición genera registro inmutable | Valor anterior, nuevo, usuario, timestamp, motivo | RF-AUTH-001, RF-MT-001 | ✅ |
+| RF-AUD-002 | Consulta de audit events con filtros | Filtros: entityType, entityId, performedBy, fechas | RF-AUD-001 | ✅ |
+| RF-AUD-003 | Audit events no editables ni eliminables | No existe endpoint de DELETE/PATCH para auditoría | RF-AUD-001 | ✅ |
 
 ### 1.7 Analytics y Reportes
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-ANA-001 | Resumen por empleado (horas + costos por período) | Filtro por fecha y empleado. Horas normales, extra, costos | RF-JOR-002, RF-CFG-001, RF-EMPL-001 | ⬜ |
-| RF-ANA-002 | Ranking de empleados por horas (desc) | Orden descendente por horas totales en período | RF-ANA-001 | ⬜ |
-| RF-ANA-003 | Ranking de empleados por costo (desc) | Orden descendente por costo total en período | RF-ANA-001 | ⬜ |
-| RF-ANA-004 | Agrupación por día/semana/quincena/mes | `groupBy` con totales correctos por período | RF-ANA-001 | ⬜ |
-| RF-ANA-005 | Costos nominales y extra por período | Tarifa vigente a la fecha de cada jornada | RF-ANA-001, RF-CFG-001 | ⬜ |
+| RF-ANA-001 | Resumen por empleado (horas + costos por período) | Filtro por fecha y empleado. Horas normales, extra, costos | RF-JOR-002, RF-CFG-001, RF-EMPL-001 | ✅ |
+| RF-ANA-002 | Ranking de empleados por horas (desc) | Orden descendente por horas totales en período | RF-ANA-001 | ✅ |
+| RF-ANA-003 | Ranking de empleados por costo (desc) | Orden descendente por costo total en período | RF-ANA-001 | ✅ |
+| RF-ANA-004 | Agrupación por día/semana/quincena/mes | `groupBy` con totales correctos por período | RF-ANA-001 | ✅ |
+| RF-ANA-005 | Costos nominales y extra por período | Tarifa vigente a la fecha de cada jornada | RF-ANA-001, RF-CFG-001 | ✅ |
 
 ### 1.8 Exportaciones
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-EXP-001 | Exportar a Excel (.xlsx) con datos de analytics | Archivo descargable con resumen y detalle | RF-ANA-001, RNF-ESC-005 | ⬜ |
-| RF-EXP-002 | Exportación asíncrona (retorna exportId) | Usuario consulta estado y descarga cuando listo | RF-EXP-001, RNF-ESC-005 | ⬜ |
-| RF-EXP-003 | Exportación asociada al usuario que la generó | Solo ese usuario puede descargarla | RF-EXP-002, RF-AUTH-001 | ⬜ |
+| RF-EXP-001 | Exportar a Excel (.xlsx) con datos de analytics | Archivo descargable con resumen y detalle | RF-ANA-001, RNF-ESC-005 | ✅ |
+| RF-EXP-002 | Exportación asíncrona (retorna exportId) | Usuario consulta estado y descarga cuando listo | RF-EXP-001, RNF-ESC-005 | ✅ |
+| RF-EXP-003 | Exportación asociada al usuario que la generó | Solo ese usuario puede descargarla | RF-EXP-002, RF-AUTH-001 | ✅ |
 
 ### 1.9 Offline-First
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-OFF-001 | Cola offline local (IndexedDB) | Inicio/cierre de jornadas offline encolados localmente | RF-JOR-001, RF-JOR-002 | ⬜ |
-| RF-OFF-002 | Sincronización automática al reconectar | Operaciones enviadas vía `/sync/batch`. Sin pérdida | RF-OFF-001, RF-AUTH-003 | ⬜ |
-| RF-OFF-003 | Idempotencia en sync (duplicados → `duplicate`) | Operación ya aplicada retorna `duplicate` sin error | RF-OFF-002 | ⬜ |
-| RF-OFF-004 | Manejo de conflictos con detalle | Backend retorna detalle del conflicto para resolución | RF-OFF-002 | ⬜ |
+| RF-OFF-001 | Cola offline local (IndexedDB) | Almacenamiento local persistente hasta sync | RF-JOR-001 | ✅ |
+| RF-OFF-002 | Sincronización automática al recuperar conexión | Endpoint `/sync/batch` para procesamiento masivo | RF-OFF-001 | ✅ |
+| RF-OFF-003 | Idempotencia: acciones duplicadas se ignoran | Uso de `clientGeneratedId` (UUID) en el backend | RF-OFF-002 | ✅ |
+| RF-OFF-004 | Manejo de conflictos (ej. sesión ya activa) | El backend reporta status por cada ítem del batch | RF-OFF-002 | ✅ |
 
 ### 1.10 Configuración
 
 | ID | Requerimiento | Criterio de Aceptación | Dependencias | Estado |
 |----|--------------|------------------------|--------------|--------|
-| RF-CFG-001 | Tarifa por hora con fecha efectiva por empleado | Tarifa vigente según fecha. Historial no eliminable | RF-EMPL-001 | ⬜ |
-| RF-CFG-002 | Threshold de horas normales configurable (default 8h) | Configurable por empresa. Extra = horas > threshold | RF-EMP-001 | ⬜ |
+| RF-CFG-001 | Tarifa por hora con fecha efectiva por empleado | Tarifa vigente según fecha. Historial no eliminable | RF-EMPL-001 | ✅ |
+| RF-CFG-002 | Threshold de horas normales configurable (default 8h) | Configurable por empresa. Extra = horas > threshold | RF-EMP-001 | ✅ |
 
 ---
 
@@ -180,20 +180,20 @@
 
 | Categoría | Total | ⬜ | 🟡 | ✅ | 🔴 |
 |-----------|-------|----|----|----|-----|
-| Autenticación | 5 | 5 | 0 | 0 | 0 |
-| Multi-Tenancy | 3 | 3 | 0 | 0 | 0 |
-| Empresas/Usuarios | 7 | 4 | 0 | 3 | 0 |
+| Autenticación | 5 | 0 | 0 | 5 | 0 |
+| Multi-Tenancy | 3 | 0 | 0 | 3 | 0 |
+| Empresas/Usuarios | 7 | 0 | 0 | 7 | 0 |
 | Empleados | 6 | 0 | 0 | 6 | 0 |
-| Jornadas/Horas | 9 | 9 | 0 | 0 | 0 |
-| Auditoría | 3 | 3 | 0 | 0 | 0 |
-| Analytics | 5 | 5 | 0 | 0 | 0 |
-| Exportaciones | 3 | 3 | 0 | 0 | 0 |
-| Offline-First | 4 | 4 | 0 | 0 | 0 |
-| Configuración | 2 | 2 | 0 | 0 | 0 |
+| Jornadas/Horas | 9 | 0 | 0 | 9 | 0 |
+| Auditoría | 3 | 0 | 0 | 3 | 0 |
+| Analytics | 5 | 0 | 0 | 5 | 0 |
+| Exportaciones | 3 | 0 | 0 | 3 | 0 |
+| Offline-First | 4 | 0 | 0 | 4 | 0 |
+| Configuración | 2 | 0 | 0 | 2 | 0 |
 | RNF - Rendimiento | 2 | 2 | 0 | 0 | 0 |
 | RNF - Seguridad | 4 | 4 | 0 | 0 | 0 |
 | RNF - Usabilidad | 3 | 3 | 0 | 0 | 0 |
 | RNF - Localización | 3 | 3 | 0 | 0 | 0 |
 | RNF - Escalabilidad | 5 | 5 | 0 | 0 | 0 |
 | RNF - Stack Tech | 6 | 6 | 0 | 0 | 0 |
-| **TOTAL** | **70** | **61** | **0** | **9** | **0** |
+| **TOTAL** | **70** | **23** | **0** | **47** | **0** |
