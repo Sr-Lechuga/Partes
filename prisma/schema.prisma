@@ -178,20 +178,4 @@ model AuditEvent {
   @@map("audit_events")
 }
 
-// RF-EXP-002 / RF-EXP-003: Asynchronous export tracking
-model ExportTask {
-  id         String   @id @default(uuid())
-  companyId  String
-  userId     String   // firebaseUid
-  type       String   // e.g. "ANALYTICS_EXCEL"
-  status     String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
-  filters    Json?    // Filters used for the export
-  fileUrl    String?  // URL to download the file
-  error      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([companyId, userId])
-  @@map("export_tasks")
-}
 
