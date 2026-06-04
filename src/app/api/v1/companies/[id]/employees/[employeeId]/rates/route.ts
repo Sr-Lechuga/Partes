@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
-import { withAuth } from '@/lib/auth';
 import { EmployeeService } from '@/services/employeeService';
 import { addRateSchema } from '@/lib/validators/employee';
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
+import { withAuth, createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
 
 /**
  * RF-CFG-001: List rate history for an employee
@@ -18,7 +17,7 @@ export const GET = withAuth(
       return createErrorResponse('Error al obtener historial de tarifas', 500);
     }
   },
-  { roles: ['ADMIN', 'HR'], checkCompanyAccess: true }
+  { requiredRoles: ['ADMIN', 'HR'], checkCompanyAccess: true }
 );
 
 /**
@@ -47,5 +46,5 @@ export const POST = withAuth(
       return createErrorResponse('Error al agregar tarifa', 500);
     }
   },
-  { roles: ['ADMIN', 'HR'], checkCompanyAccess: true }
+  { requiredRoles: ['ADMIN', 'HR'], checkCompanyAccess: true }
 );

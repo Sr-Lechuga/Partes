@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
-import { withAuth } from '@/lib/auth';
 import { AnalyticsService } from '@/services/analyticsService';
 import { analyticsQuerySchema } from '@/lib/validators/analytics';
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
+import { withAuth, createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
 
 export const GET = withAuth(
   async (req: NextRequest, { params, user }) => {
@@ -27,5 +26,5 @@ export const GET = withAuth(
       return createErrorResponse('Error interno', 500);
     }
   },
-  { roles: ['ADMIN', 'HR'], checkCompanyAccess: true }
+  { requiredRoles: ['ADMIN', 'HR'], checkCompanyAccess: true }
 );
