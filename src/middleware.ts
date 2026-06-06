@@ -1,18 +1,29 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { jwtVerify, createRemoteJWKSet } from 'jose'
 
-export function middleware(request: NextRequest) {
-  return NextResponse.next();
+const JWKS = createRemoteJWKSet(
+  new URL(
+    'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+  ),
+)
+
+export async function middleware(request: NextRequest) {
+  const session = request.cookies.get('__session')?.value
+  if (!session) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  try {
+    await jwtVerify(session, JWKS, {
+      audience: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      issuer: `https://securetoken.google.com/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}`,
+    })
+    return NextResponse.next()
+  } catch {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
-};
+  matcher: ['/(employee|admin)(.*)'],
+}
