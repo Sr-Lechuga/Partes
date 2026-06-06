@@ -1,22 +1,20 @@
 import { NextRequest } from 'next/server';
-import { withAuth } from '@/lib/auth';
 import { SyncService } from '@/services/syncService';
 import { batchSyncSchema } from '@/lib/validators/sync';
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
+import { withAuth, createSuccessResponse, createErrorResponse } from '@/lib/api-utils';
 
 /**
  * RF-OFF-002: Process a batch of offline operations
  */
 export const POST = withAuth(
-  async (req: NextRequest, { params, user }) => {
+  async (req: NextRequest, { params, user, role }) => {
     try {
       const body = await req.json();
       const { operations } = batchSyncSchema.parse(body);
 
       // Check if user has HR or ADMIN role to allow older manual logs (RF-JOR-003)
-      // Actually, the withAuth metadata already has roles. 
-      // We'll check if the current user has HR/ADMIN in this company.
-      const isHR = user.role === 'HR' || user.role === 'ADMIN';
+      // role comes from withAuth context (membership role for this company).
+      const isHR = role === 'HR' || role === 'ADMIN';
 
       const results = await SyncService.processBatch(
         params.id,
