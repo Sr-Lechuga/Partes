@@ -20,6 +20,7 @@ export const updateEmployeeSchema = z.object({
   hourlyRate: z.number().positive('Hourly rate must be positive').optional(),
   effectiveFrom: z.coerce.date().optional(), // RF-CFG-001
   reason: z.string().max(500).optional(),
+  membershipId: z.string().uuid().optional(), // B0: link employee to a membership for self-service
 });
 
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;

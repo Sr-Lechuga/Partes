@@ -306,6 +306,22 @@ export class EmployeeService {
   }
 
   /**
+   * B0: Find the employee linked to a specific membership in a company.
+   * Returns the active employee with their current rate, or null if not found.
+   */
+  static async getEmployeeByMembershipId(companyId: string, membershipId: string) {
+    return prisma.employee.findFirst({
+      where: { companyId, membershipId, status: 'ACTIVE' },
+      include: {
+        rateHistory: {
+          orderBy: { effectiveFrom: 'desc' },
+          take: 1,
+        },
+      },
+    });
+  }
+
+  /**
    * RF-CFG-001: Explicitly add a new rate history entry.
    */
   static async addRateHistory(

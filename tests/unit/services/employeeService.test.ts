@@ -107,4 +107,37 @@ describe('EmployeeService', () => {
       expect(prisma.auditEvent.create).toHaveBeenCalled();
     });
   });
+
+  describe('getEmployeeByMembershipId', () => {
+    const membershipId = 'membership-uuid-001';
+
+    it('should return the employee when found', async () => {
+      const mockEmployee = {
+        id: 'emp-1',
+        companyId,
+        membershipId,
+        status: 'ACTIVE',
+        name: 'Jane Doe',
+        rateHistory: [{ hourlyRate: new Decimal(100), effectiveFrom: new Date('2024-01-01') }],
+      };
+      (prisma.employee.findFirst as jest.Mock).mockResolvedValue(mockEmployee);
+
+      const result = await EmployeeService.getEmployeeByMembershipId(companyId, membershipId);
+
+      expect(result).toEqual(mockEmployee);
+      expect(prisma.employee.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ companyId, membershipId, status: 'ACTIVE' }),
+        })
+      );
+    });
+
+    it('should return null when no employee is linked to the membership', async () => {
+      (prisma.employee.findFirst as jest.Mock).mockResolvedValue(null);
+
+      const result = await EmployeeService.getEmployeeByMembershipId(companyId, membershipId);
+
+      expect(result).toBeNull();
+    });
+  });
 });

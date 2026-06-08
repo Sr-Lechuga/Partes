@@ -38,7 +38,8 @@ model Membership {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
+  company  Company   @relation(fields: [companyId], references: [id])
+  employee Employee?
 
   // A user can only have one active membership per company
   @@unique([companyId, firebaseUid])
@@ -51,6 +52,7 @@ model Membership {
 model Employee {
   id               String   @id @default(uuid())
   companyId        String
+  membershipId     String?  @unique // B0: link to the Membership for self-service access
   name             String
   documentNumber   String   // CI or identification number
   phone            String?
@@ -60,6 +62,7 @@ model Employee {
   updatedAt        DateTime @updatedAt
 
   company       Company                @relation(fields: [companyId], references: [id])
+  membership    Membership?            @relation(fields: [membershipId], references: [id])
   rateHistory   EmployeeRateHistory[]
   changeHistory EmployeeChangeHistory[]
   workSessions  WorkSession[]
