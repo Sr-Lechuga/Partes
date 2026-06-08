@@ -2,29 +2,29 @@
 const config = {
   projects: [
     {
-      displayName: 'node',
-      preset: 'ts-jest',
-      testEnvironment: 'node',
-      roots: ['<rootDir>/tests'],
+      displayName: "node",
+      preset: "ts-jest",
+      testEnvironment: "node",
+      roots: ["<rootDir>/tests"],
       moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
+        "^@/(.*)$": "<rootDir>/src/$1",
       },
-      testMatch: ['**/*.test.ts'],
+      testMatch: ["**/*.test.ts"],
       clearMocks: true,
     },
     {
-      displayName: 'jsdom',
-      preset: 'ts-jest',
-      testEnvironment: 'jsdom',
-      roots: ['<rootDir>/tests'],
+      displayName: "jsdom",
+      preset: "ts-jest",
+      testEnvironment: "jsdom",
+      roots: ["<rootDir>/tests"],
       moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
+        "^@/(.*)$": "<rootDir>/src/$1",
       },
-      testMatch: ['**/*.test.tsx'],
+      testMatch: ["**/*.test.tsx"],
       clearMocks: true,
-      setupFilesAfterEnv: ['@testing-library/jest-dom'],
+      setupFilesAfterEnv: ["@testing-library/jest-dom"],
       transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
+        "^.+\\.(ts|tsx)$": ["ts-jest", { tsconfig: { jsx: "react-jsx" } }],
       },
     },
   ],
